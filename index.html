@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WebGIS Langkat Hulu</title>
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/bootstrap-icons.css" rel="stylesheet">
+    <link href="css/templatemo-kind-heart-charity.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: "Poppins", sans-serif;
+            background-color: #f7f7f7;
+        }
+
+        .site-header {
+            background: linear-gradient(90deg, #2E7D32, #8BC34A);
+            color: #fff;
+            padding: 8px 0;
+            font-weight: 500;
+        }
+
+        .navbar {
+            background: #ffffff !important;
+            border-bottom: 4px solid #8BC34A;
+        }
+        .navbar-brand span {
+            font-weight: 700;
+            color: #2E7D32;
+        }
+        .navbar-brand small {
+            color: #E53935;
+        }
+        .nav-link {
+            font-weight: 600;
+            color: #2E7D32 !important;
+        }
+        .nav-link:hover {
+            color: #E53935 !important;
+        }
+
+        .hero-section img {
+                margin-bottom: 0px; /* default aman untuk PC */
+            }
+
+        h2 {
+            font-weight: 700;
+            color: #2E7D32;
+        }
+
+        .featured-block {
+            border: 2px solid #8BC34A;
+            border-radius: 12px;
+            padding: 16px;
+            transition: 0.3s;
+            background: #ffffff;
+        }
+        .featured-block:hover {
+            transform: scale(1.05);
+            border-color: #E53935;
+        }
+        .featured-block-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2E7D32;
+        }
+        .featured-block strong {
+            color: #E53935;
+        }
+
+        .site-footer-bottom {
+            background: linear-gradient(90deg, #8BC34A, #2E7D32);
+            color: white;
+            padding: 15px 0;
+            margin-top: 40px;
+        }
+
+        /* === RESPONSIVE FIX JARAK === */
+        @media (max-width: 600px) {
+            /* Jarak HP tetap seperti sebelumnya */
+            .section-padding {
+                padding-top: 60px !important;
+            }
+            .hero-section img {
+                margin-bottom: 20px !important;
+            }
+            h2.mb-5 {
+                margin-top: 0px !important;
+                margin-bottom: 30px !important;
+            }
+        }
+            .hero-section img {
+                margin-bottom: 20px !important;
+            }
+            h2.mb-5 {
+                margin-top: 0px !important;
+                margin-bottom: 30px !important;
+            }
+        }
+            .section-padding {
+                padding-top: 15px !important; /* cukup dekat tapi aman */
+            }
+            h2.mb-5 {
+                margin-top: 10px !important;
+                margin-bottom: 20px !important;
+            }
+        }
+            .section-padding {
+            padding-top: 60px; /* jarak aman untuk PC */
+        }
+            h2.mb-5 {
+                margin-top: 0px !important; /* aman, tidak negatif */
+                margin-bottom: 20px !important;
+            }
+        }
+            .section-padding {
+                padding-top: 10px !important;
+            }
+            h2.mb-5 {
+                margin-top: 5px !important;  /* Tidak negatif, aman untuk PC */
+                margin-bottom: 20px !important;
+            }
+        }
+            .section-padding {
+                padding-top: 5px !important;
+            }
+            h2.mb-5 {
+                margin-top: -20px !important; /* tidak terlalu negatif agar PC aman */
+                margin-bottom: 15px !important;
+            }
+        }
+            .section-padding {
+                padding-top: 0px !important;
+            }
+            h2.mb-5 {
+                margin-top: -40px !important;
+                margin-bottom: 10px !important;
+            }
+        }
+            h2.mb-5 {
+                margin-top: -25px !important;
+                margin-bottom: 15px !important;
+            }
+        }
+            h2.mb-5 {
+                margin-top: -10px !important;
+                margin-bottom: 25px !important;
+            }
+        }
+        /* Shadow on scroll */
+    .navbar.scrolled {
+        box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+        transition: box-shadow 0.3s ease;
+    }
+    /* Separator shadow under hero image */
+    .hero-separator {
+        width: 100%;
+        height: 20px;
+        margin-top: -20px;
+        box-shadow: 0 -8px 25px rgba(0,0,0,0.12) inset;
+    }
+    /* Wave Separator */
+    .wave-separator {
+        margin-top: -20px !important;
+        background: transparent !important;
+        height: 0;
+        line-height: 0;
+        /* remove top shadow */
+    }
+</style>
+</head>
+<body id="section_1">
+
+<header class="site-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-12 d-flex flex-wrap">
+                <p class="d-flex me-4 mb-0">
+                    <i class="bi-geo-alt me-2"></i>
+                    Kabupaten Langkat Provinsi Sumatera Utara
+                </p>
+            </div>
+        </div>
+    </div>
+</header>
+
+<nav class="navbar navbar-expand-lg shadow-lg sticky-top" navbar-expand-lg shadow-lg">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">
+            <img src="images/logo3.png" class="logo img-fluid" alt="Logo" style="max-height:70px; width:auto; object-fit:contain;">
+            <span>WebGIS <small>Kabupaten Langkat</small></span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link click-scroll" href="#top">Home</a></li>
+                <li class="nav-item"><a class="nav-link click-scroll" href="#section_2">About</a></li>
+                <li class="nav-item"><a class="nav-link click-scroll" href="#section_6">Contact</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<main>
+    <section class="hero-section ">
+        <div class="container-fluid p-0">
+            <img src="images/potensi2.png" class="img-fluid w-100" alt="Hero Image">
+        </div>
+    </section>
+
+<!-- Wave Separator -->
+<div class="wave-separator">
+<svg viewBox="0 0 1440 120" preserveAspectRatio="none" style="width:100%; height:40px; display:block;" display:block;">
+<path d="M0,40 C360,120 1080,-40 1440,40 L1440,0 L0,0 Z" fill="#ffffff" style="filter: drop-shadow(0 2px 6px rgba(0,0,0,0.12));"></path>
+</svg>
+</div>
+
+
+    <section class="section-padding">
+        <div class="container text-center">
+            <h2 class="mb-5">Layanan Kami</h2>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-3 col-md-6 col-12 mb-4">
+                    <div class="featured-block d-flex justify-content-center align-items-center">
+                        <a href="maps.html" class="d-block text-decoration-none">
+                            <img src="images/icons/364.jpg" class="featured-block-image img-fluid" alt="">
+                            <p class="featured-block-text mt-3">Peta <strong>Interaktif</strong></p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <div class="site-footer-bottom">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 col-md-7 col-12">
+                    <p class="copyright-text mb-0">Copyright © 2025
+                        <a href="#">Kabupaten Langkat</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="js/jquery.sticky.js"></script>
+<script src="js/click-scroll.js"></script>
+<script src="js/counter.js"></script>
+<script src="js/custom.js"></script>
+<!-- Restored scripts required for sticky navbar -->
+<script>
+    // Add shadow when scrolling
+    window.addEventListener('scroll', function() {
+        const navbar = document.querySelector('.navbar');
+        if (window.scrollY > 10) {
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.remove('scrolled');
+        }
+    });
+</script>
+<script src="js/bootstrap.min.js"></script>
+
+</body>
+</html>

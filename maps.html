@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <title>WebGIS Langkat Hulu</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <style>
+  
+  /* ========== Disclaimer Popup ========== */
+#disclaimer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+#disclaimer-box {
+  background: white;
+  padding: 20px 30px;
+  border-radius: 10px;
+  max-width: 400px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  animation: fadeIn 0.4s ease;
+}
+
+#disclaimer-box h3 {
+  margin-top: 0;
+  color: #2f8f5b;
+}
+
+#disclaimer-box p {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+}
+
+#close-disclaimer {
+  background-color: #2f8f5b;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+#close-disclaimer:hover {
+  background-color: #256b47;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+  
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Tombol toggle sidebar */
+#toggle-btn {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1100;
+  background-color: #2f8f5b;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 12px;
+  font-size: 20px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+#toggle-btn:hover {
+  background-color: #256d47;
+}
+
+/* Sidebar kiri */
+#sidebar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 340px;
+  height: 100vh;
+  background: #f3f3f3;
+  border-right: 2px solid #ccc;
+  display: flex;
+  flex-direction: column;
+  transition: left 0.3s ease;
+  z-index: 1000;
+}
+
+#sidebar.hidden {
+  left: -340px;
+}
+
+/* Bagian atas: daftar kecamatan */
+#kecamatan-container {
+  flex: 6;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#kecamatan-container h2 {
+  text-align: center;
+  background-color: #2f8f5b;
+  color: white;
+  padding: 10px;
+  margin: 0;
+  font-size: 18px;
+}
+
+#feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  flex: 1;
+  background: #fff;
+}
+
+.kecamatan-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.kecamatan-item:hover {
+  background-color: #d8f3dc;
+}
+
+.kecamatan-item.active {
+  background-color: #b7e4c7;
+  font-weight: bold;
+}
+
+.kecamatan-color {
+  width: 25px;
+  height: 5px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* Bagian bawah: detail kecamatan */
+#detail-panel {
+  flex: 1;
+  border-top: 2px solid #ccc;
+  background-color: #ffffff;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+#detail-panel h3 {
+  margin-top: 0;
+  text-align: center;
+  color: #2f8f5b;
+}
+
+#detail-content table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#detail-content td {
+  padding: 5px;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+
+/* Peta */
+#map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 500;
+}
+
+/* Label kecamatan */
+.label-kecamatan {
+  color: #002f6c;
+  font-size: 12px;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px #fff;
+  text-align: center;
+}
+
+/* Responsif mobile */
+@media (max-width: 768px) {
+  #sidebar {
+    width: 100%;
+    height: 70vh;
+  }
+
+  #sidebar.hidden {
+    top: -70vh;
+    left: 0;
+  }
+
+  #kecamatan-container h2 {
+    font-size: 16px;
+  }
+}
+
+.kategori-title {
+  margin: 0;
+  padding: 10px;
+  background: #2f8f5b;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kategori-list {
+  max-height: 280px;       /* tinggi maksimum scroll */
+  overflow-y: auto;        /* scroll vertikal */
+  transition: max-height 0.25s ease-out;
+  background: #fff;
+  border-bottom: 1px solid #ccc;
+}
+
+/* Saat collapse, list disembunyikan */
+.kategori-list.hidden {
+  max-height: 0;
+  overflow: hidden;
+}
+
+
+.kategori-list.hidden {
+  max-height: 0;
+  overflow: hidden;
+}
+
+.toggle-icon {
+  font-size: 14px;
+  transition: transform 0.25s;
+}
+
+.toggle-icon.rotated {
+  transform: rotate(-90deg);
+}
+
+
+  </style>
+</head>
+<body>
+
+  <button id="toggle-btn">≡</button>
+
+  <div id="sidebar">
+    <div id="kecamatan-container">
+      <h2>Daftar Legenda</h2>
+
+
+<h2 class="kategori-title" data-target="list-desa-langkat">
+  Batas Desa <span class="toggle-icon rotated">▼</span>
+</h2>
+<ul id="list-desa-langkat" class="kategori-list hidden"></ul>
+
+<h2 class="kategori-title" data-target="list-tutupanlahan">
+  Tutupan lahan <span class="toggle-icon rotated">▼</span>
+</h2>
+<ul id="list-tutupanlahan" class="kategori-list hidden"></ul>
+
+<h2 class="kategori-title" data-target="list-wilayahpertanian">
+  Potensi Wilayah Pertanian <span class="toggle-icon rotated">▼</span>
+</h2>
+<ul id="list-wilayahpertanian" class="kategori-list hidden"></ul>
+
+<h2 class="kategori-title" data-target="list-kawasanmangrove">
+  Kawasan Mangrove <span class="toggle-icon rotated">▼</span>
+</h2>
+<ul id="list-kawasanmangrove" class="kategori-list hidden"></ul>
+
+    
+	</div>
+	
+
+    <div id="detail-panel">
+      <h3>Detail</h3>
+      <div id="detail-content">Klik salah satu pilihan di daftar Legenda atau di peta untuk melihat detailnya.</div>
+    </div>
+  </div>
+  
+<!-- ========== POPUP DISCLAIMER ========== -->
+<div id="disclaimer-overlay">
+  <div id="disclaimer-box">
+    <h3>📍 Disclaimer</h3>
+    <p>
+      Data dan batas wilayah pada peta ini bersifat <b>informasi umum</b> dan
+      <b>tidak menggantikan data resmi pemerintah</b>. Lokasi dan batas dapat
+      mengalami perbedaan dari kondisi sebenarnya di lapangan.
+    </p>
+    <button id="close-disclaimer">Saya Mengerti</button>
+  </div>
+</div>
+
+  <div id="map"></div>
+
+  <script>
+    // Tombol Toggle Sidebar
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('toggle-btn');
+
+    toggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('hidden');
+      toggleBtn.textContent = sidebar.classList.contains('hidden') ? '☰' : '≡';
+      setTimeout(() => map.invalidateSize(), 310);
+    });
+
+    // Inisialisasi peta (pindahkan kontrol zoom ke kanan bawah)
+    var map = L.map('map', {
+      zoomControl: false
+    }).setView([3.785, 98.331], 9);
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    // Base layer
+    var baseOSM = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    var baseGoogleSat = L.tileLayer(
+      'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+      { attribution: 'Citra Satelit © Google', maxZoom: 20 }
+    );
+
+    
+    
+	var layerDesaLangkat = L.layerGroup();
+	var layertutupanlahan = L.layerGroup();
+	var layerwilayahpertanian = L.layerGroup();
+	var layerkawasanmangrove = L.layerGroup();
+
+    
+
+    // === WARNA ACAK KONTRAS UNTUK SETIAP KECAMATAN ===
+const warnaKecamatan = [
+  "#e6194b", "#3cb44b", "#ffe119", "#4363d8", "#f58231",
+  "#911eb4", "#46f0f0", "#f032e6", "#bcf60c", "#fabebe",
+  "#008080", "#e6beff", "#9a6324", "#fffac8", "#800000",
+  "#aaffc3", "#808000", "#ffd8b1", "#000075", "#808080"
+];
+
+function getColorByName(nama) {
+  let hash = 0;
+  for (let i = 0; i < nama.length; i++) {
+    hash = nama.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % warnaKecamatan.length;
+  return warnaKecamatan[index];
+}
+
+
+ // === BATAS DESA LANGKAT ===
+fetch('data/BATAS_DESA_LANGKAT.geojson')
+  .then(res => res.json())
+  .then(data => {
+    const listContainer = document.getElementById('list-desa-langkat');
+    const detailContent = document.getElementById('detail-content');
+
+    const layer = L.geoJSON(data, {
+      style: function(feature) {
+        const nama = feature.properties.nama_desa || feature.properties.NAMOBJ || "Tanpa Nama";
+        return {
+          color: "#000",
+          fillColor: getColorByName(nama),
+          fillOpacity: 0.2,
+          weight: 1.2
+        };
+      },
+      onEachFeature: function(feature, layer) {
+        const nama = feature.properties.nama_desa || feature.properties.NAMOBJ || "Tanpa Nama";
+        const warna = getColorByName(nama);
+
+        // Tambah ke daftar sidebar
+        const li = document.createElement('li');
+        li.className = 'kecamatan-item';
+        li.innerHTML = `<div class="kecamatan-color" style="background:${warna}"></div><span>${nama}</span>`;
+        listContainer.appendChild(li);
+
+        function tampilkanDetail() {
+          document.querySelectorAll('.kecamatan-item').forEach(el => el.classList.remove('active'));
+          li.classList.add('active');
+
+          map.flyToBounds(layer.getBounds(), { duration: 1 });
+
+          layer.setStyle({ color: '#ff0000', weight: 3 });
+          setTimeout(() => layer.setStyle({
+            color: '#000',
+            fillColor: warna,
+            fillOpacity: 0.2,
+            weight: 1.2
+          }), 1500);
+
+          let html = `<h4>${nama}</h4><table>`;
+          for (const [key, value] of Object.entries(feature.properties)) {
+            html += `<tr><td><b>${key}</b></td><td>: ${value}</td></tr>`;
+          }
+          html += '</table>';
+          detailContent.innerHTML = html;
+        }
+
+        li.onclick = tampilkanDetail;
+        layer.on('click', tampilkanDetail);
+      }
+    });
+
+    layer.addTo(layerDesaLangkat);
+  });
+
+
+// === BATAS TUTUPAN LAHAN ===
+fetch('data/DATA _TUTUPAN_LAHAN.geojson')
+  .then(res => res.json())
+  .then(data => {
+    const listContainer = document.getElementById('list-tutupanlahan');
+    const detailContent = document.getElementById('detail-content');
+
+    const layer = L.geoJSON(data, {
+      style: function(feature) {
+        const nama = feature.properties.nama_desa || feature.properties.name || "Tanpa Nama";
+        return {
+          color: "#000",
+          fillColor: getColorByName(nama),
+          fillOpacity: 0.2,
+          weight: 1.2
+        };
+      },
+      onEachFeature: function(feature, layer) {
+        const nama = feature.properties.nama_desa || feature.properties.name || "Tanpa Nama";
+        const warna = getColorByName(nama);
+
+        // Tambah ke daftar sidebar
+        const li = document.createElement('li');
+        li.className = 'kecamatan-item';
+        li.innerHTML = `<div class="kecamatan-color" style="background:${warna}"></div><span>${nama}</span>`;
+        listContainer.appendChild(li);
+
+        function tampilkanDetail() {
+          document.querySelectorAll('.kecamatan-item').forEach(el => el.classList.remove('active'));
+          li.classList.add('active');
+
+          map.flyToBounds(layer.getBounds(), { duration: 1 });
+
+          layer.setStyle({ color: '#ff0000', weight: 3 });
+          setTimeout(() => layer.setStyle({
+            color: '#000',
+            fillColor: warna,
+            fillOpacity: 0.2,
+            weight: 1.2
+          }), 1500);
+
+          let html = `<h4>${nama}</h4><table>`;
+          for (const [key, value] of Object.entries(feature.properties)) {
+            html += `<tr><td><b>${key}</b></td><td>: ${value}</td></tr>`;
+          }
+          html += '</table>';
+          detailContent.innerHTML = html;
+        }
+
+        li.onclick = tampilkanDetail;
+        layer.on('click', tampilkanDetail);
+      }
+    });
+
+    layer.addTo(layertutupanlahan);
+  });
+
+
+
+ // === BATAS wilayah pertanian ===
+fetch('data/Potensi_Wilayah.geojson')
+  .then(res => res.json())
+  .then(data => {
+    const listContainer = document.getElementById('list-wilayahpertanian');
+    const detailContent = document.getElementById('detail-content');
+
+    const layer = L.geoJSON(data, {
+      style: function(feature) {
+        const nama = feature.properties.nama_desa || feature.properties.name || "Tanpa Nama";
+        return {
+          color: "#000",
+          fillColor: getColorByName(nama),
+          fillOpacity: 0.2,
+          weight: 1.2
+        };
+      },
+      onEachFeature: function(feature, layer) {
+        const nama = feature.properties.nama_desa || feature.properties.name || "Tanpa Nama";
+        const warna = getColorByName(nama);
+
+        // Tambah ke daftar sidebar
+        const li = document.createElement('li');
+        li.className = 'kecamatan-item';
+        li.innerHTML = `<div class="kecamatan-color" style="background:${warna}"></div><span>${nama}</span>`;
+        listContainer.appendChild(li);
+
+        function tampilkanDetail() {
+          document.querySelectorAll('.kecamatan-item').forEach(el => el.classList.remove('active'));
+          li.classList.add('active');
+
+          map.flyToBounds(layer.getBounds(), { duration: 1 });
+
+          layer.setStyle({ color: '#ff0000', weight: 3 });
+          setTimeout(() => layer.setStyle({
+            color: '#000',
+            fillColor: warna,
+            fillOpacity: 0.2,
+            weight: 1.2
+          }), 1500);
+
+          let html = `<h4>${nama}</h4><table>`;
+          for (const [key, value] of Object.entries(feature.properties)) {
+            html += `<tr><td><b>${key}</b></td><td>: ${value}</td></tr>`;
+          }
+          html += '</table>';
+          detailContent.innerHTML = html;
+        }
+
+        li.onclick = tampilkanDetail;
+        layer.on('click', tampilkanDetail);
+      }
+    });
+
+    layer.addTo(layerwilayahpertanian);
+  });
+
+
+// === BATAS kawasan mangrove ===
+fetch('data/TUTUPAN_MAGROVE.geojson')
+  .then(res => res.json())
+  .then(data => {
+    const listContainer = document.getElementById('list-kawasanmangrove');
+    const detailContent = document.getElementById('detail-content');
+
+    const layer = L.geoJSON(data, {
+      style: function(feature) {
+        const nama = feature.properties.nama_desa || feature.properties.name || "Tanpa Nama";
+        return {
+          color: "#000",
+          fillColor: getColorByName(nama),
+          fillOpacity: 0.2,
+          weight: 1.2
+        };
+      },
+      onEachFeature: function(feature, layer) {
+        const nama = feature.properties.nama_desa || feature.properties.name || "Tanpa Nama";
+        const warna = getColorByName(nama);
+
+        // Tambah ke daftar sidebar
+        const li = document.createElement('li');
+        li.className = 'kecamatan-item';
+        li.innerHTML = `<div class="kecamatan-color" style="background:${warna}"></div><span>${nama}</span>`;
+        listContainer.appendChild(li);
+
+        function tampilkanDetail() {
+          document.querySelectorAll('.kecamatan-item').forEach(el => el.classList.remove('active'));
+          li.classList.add('active');
+
+          map.flyToBounds(layer.getBounds(), { duration: 1 });
+
+          layer.setStyle({ color: '#ff0000', weight: 3 });
+          setTimeout(() => layer.setStyle({
+            color: '#000',
+            fillColor: warna,
+            fillOpacity: 0.2,
+            weight: 1.2
+          }), 1500);
+
+          let html = `<h4>${nama}</h4><table>`;
+          for (const [key, value] of Object.entries(feature.properties)) {
+            html += `<tr><td><b>${key}</b></td><td>: ${value}</td></tr>`;
+          }
+          html += '</table>';
+          detailContent.innerHTML = html;
+        }
+
+        li.onclick = tampilkanDetail;
+        layer.on('click', tampilkanDetail);
+      }
+    });
+
+    layer.addTo(layerkawasanmangrove);
+  });
+
+
+
+    // Kontrol layer
+    var baseMaps = {
+      "Peta Satelit (Google)": baseGoogleSat,
+      "Peta Dasar (OpenStreetMap)": baseOSM
+    };
+
+    var overlayMaps = {
+     
+	  "Batas Desa": layerDesaLangkat,
+	  "Tutupan Lahan": layertutupanlahan,
+	  "Potensi Wilayah pertanian": layerwilayahpertanian,
+	  "Kawasan Mangrove": layerkawasanmangrove
+    };
+
+    L.control.layers(baseMaps, overlayMaps, { collapsed: false, position: 'topright' }).addTo(map);
+
+    
+   
+	
+	// === Popup Disclaimer ===
+document.getElementById('close-disclaimer').addEventListener('click', function() {
+  document.getElementById('disclaimer-overlay').style.display = 'none';
+});
+
+
+// Toggle collapse categories
+document.querySelectorAll('.kategori-title').forEach(title => {
+  title.addEventListener('click', () => {
+    const targetId = title.getAttribute('data-target');
+    const listEl = document.getElementById(targetId);
+    const icon = title.querySelector('.toggle-icon');
+
+    listEl.classList.toggle('hidden');
+    icon.classList.toggle('rotated');
+  });
+});
+
+
+  </script>
+</body>
+</html>
+
